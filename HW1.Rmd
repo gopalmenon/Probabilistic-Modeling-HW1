@@ -1,0 +1,53 @@
+---
+title: 'CS6190: Probabilistic Modeling Homework 1
+Exponential Families, Conjugate Priors'
+author: "Gopal Menon"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+header-includes:
+- \usepackage{mathtools}
+- \usepackage{amsmath}
+- \usepackage{dirtytalk}
+- \DeclareMathOperator{\Unif}{Unif}
+- \DeclareMathOperator{\E}{E}
+- \DeclareMathOperator{\Var}{Var}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\hrule
+
+\section*{Written Part}
+
+\begin{enumerate}
+\item \textbf{Expectation of sufficient statistics:} Consider a random variable $X$ from a continuous exponential family with natural parameter $\eta=\left ( \eta_1,\ldots, \eta_n \right)$. Recall this means the pdf is of the form:
+
+$$
+p(x) = h(x) \exp\left (\eta \cdot T(x) -A(\eta)\right)
+$$
+
+\begin{enumerate}
+
+\item Show that $E\left[ T(x)|\eta\right] = \nabla A(\eta) = \left(\frac{\partial A}{\partial \eta_1}, \ldots,\frac{\partial A}{\partial \eta_d}  \right)$.
+
+\textbf{Hint:} Start with the identity $\int p(x) dx = 1$, and take the derivative with respect to $\eta$.
+
+$$ \begin{aligned} 
+\int p(x) dx &= 1\\
+\Rightarrow \int h(x) \exp\left (\eta \cdot T(x) -A(\eta)\right) dx &= 1\\
+\nabla \left( \int h(x) \exp\left (\eta \cdot T(x) -A(\eta)\right) dx\right) &= 0\\
+\int h(x) \exp\left (\eta \cdot T(x) -A(\eta)\right) . \left(T(x) - \nabla A(\eta) \right) dx &= 0\\
+\int T(x) h(x) \exp\left (\eta \cdot T(x) -A(\eta)\right)dx &= \nabla A(\eta)\int h(x) \exp\left (\eta \cdot T(x) -A(\eta)\right)dx\\
+\int T(x) p(x) dx &= \nabla A(\eta) \int p(x) dx\\
+E\left[ T(x)\right] &= \nabla A(\eta)
+\end{aligned}
+$$
+
+\end{enumerate}
+
+\end{enumerate}
