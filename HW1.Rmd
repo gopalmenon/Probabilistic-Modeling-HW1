@@ -92,4 +92,90 @@ $$
 
 \end{enumerate}
 
+\item \textbf{Noninformative priors for the Poisson distribution:} Let $X \sim Pois(\lambda)$. Recall that the pmf of the Poisson is
+
+$$
+P(X=k;\lambda)=\frac{\lambda^k e^{-\lambda}}{k!}
+$$
+
+\begin{enumerate}
+
+\item Rewrite the above pmf in exponential family form. What is the natural parameter? What is the sufficient statistic?
+
+$$
+\begin{aligned} 
+P(X=k;\lambda)&=\frac{\lambda^k e^{-\lambda}}{k!}\\
+&=\frac{1}{k!}\exp\left(\ln{\lambda^k e^{-\lambda}}\right)\\
+&= \frac{1}{k!}\exp\left(k\ln\lambda -\lambda\right)\\
+\eta &= \ln \lambda, \text{ natural parameter}\\
+h(k) &= k, \text{ sufficient statistic}
+\end{aligned}
+$$
+
+\item Give at least two different options for noninformative priors for $p(\lambda)$.
+
+\begin{enumerate}
+
+\item \textbf{Uniform Prior:} In this case the prior is
+
+$$
+\begin{aligned} 
+p(\lambda) &= c, \text{ for } 0\leq x \leq \infty, \text{, where c is a constant}
+\end{aligned}
+$$
+
+
+
+\item \textbf{Jeffrey's Prior:} In this case the prior is
+
+$$
+\begin{aligned} 
+\mathcal{I}(\lambda) &= E\left[ \left(\frac{\partial}{\partial\lambda} \ln  p(x|\lambda)  \right )^2 \right]\\
+&= -E\left[ \frac{\partial^2}{\partial\lambda^2} \ln  p(x|\lambda)  \right]\\
+&= -E\left[ \left(\frac{\partial^2}{\partial\lambda^2} \ln  \frac{\lambda^xe^{-\lambda}}{x!}  \right )^2 \right]\\
+&= -E\left[ \left(\frac{\partial^2}{\partial\lambda^2} \left ( x \ln \lambda - \lambda - \ln x! \right)  \right )^2 \right]\\
+&= E\left[ \frac{\partial}{\partial\lambda}\left( \frac{x}{\lambda} - 1   \right )^2 \right]\\
+&=-E\left[\frac{-x}{\lambda^2}\right]\\
+&=E\left[\frac{x}{\lambda^2}\right]\\
+&=\frac{1}{\lambda^2}E\left[x\right]\\
+&= \frac{1}{\lambda^2} \sum_{i=1}^{\infty} x p(x)\\
+&= \frac{1}{\lambda^2} \sum_{i=1}^{\infty} x \frac{\lambda^x e^{-\lambda}}{x!}\\
+&= \frac{e^{-\lambda}}{\lambda} \sum_{i=1}^{\infty}\frac{\lambda^{x-1} }{(x-1)!}\\
+&= \frac{e^{-\lambda}}{\lambda} \left( \frac{\lambda^0}{0!} + \frac{\lambda^1}{1!} + \frac{\lambda^2}{2!}+\ldots\right)\\
+&= \frac{e^{-\lambda}}{\lambda} e^{\lambda}\\
+&= \frac{1}{\lambda}\\
+p(\lambda) &= \sqrt{\mathcal{I}(\lambda)}\\
+&= \sqrt{\frac{1}{\lambda}}
+\end{aligned}
+$$
+\end{enumerate}
+
+\item What are the resulting posteriors for your two options? Are they proper (i.e., can they
+be normalized)?
+\begin{enumerate}
+
+\item \textbf{Uniform Prior:} 
+The posterior is
+$$
+\begin{aligned} 
+p(\lambda|x) &\propto p(x|\lambda)p(\lambda)\\
+&= \prod_{i=1}^n \frac{\lambda^{x_i}e^{-\lambda}}{x_i!}.c, \text{based on the assumtion of i.i.d. samples}\\
+&\propto\prod_{i=1}^n \frac{\lambda^{x_i}e^{-\lambda}}{x_i!}
+\end{aligned}
+$$
+Even though the prior cannot be normalized, since it will not add up to $1$, the posterior shown above, where the constant $c$ has been dropped, can be normalized. The reason is that the posterior is the product of distributions that can themselves be normalized.
+
+\item \textbf{Jeffrey's Prior:} The posterior is
+$$
+\begin{aligned} 
+p(\lambda|x) &\propto p(x|\lambda)p(\lambda)\\
+&= \prod_{i=1}^n \frac{\lambda^{x_i}e^{-\lambda}}{x_i!}.\sqrt{\frac{1}{\lambda}}, \text{based on the assumtion of i.i.d. samples}\\
+&=\prod_{i=1}^n \frac{\lambda^{x_i-\frac{1}{2}}e^{-\lambda}}{x_i!}
+\end{aligned}
+$$
+This can be normalized since it is the product of the likelihood, which is a product of Poisson distributions, and so can be normalized, and the prior, which can also be normalized. 
+\end{enumerate}
+
+\end{enumerate}
+
 \end{enumerate}
