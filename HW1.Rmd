@@ -199,4 +199,32 @@ p(\mu|x_1,\ldots,x_n;\sigma^2,a,b) &= p(x_1,\ldots,x_n|\mu;\sigma^2)p(\mu;a,b)\\
 &= \frac{1}{b-a}\frac{1}{\sqrt{2\pi}\sigma}\int_a^b \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right )dx 
 \end{aligned}
 $$
+
 \end{enumerate}
+
+\section*{R Coding Part}
+
+```{r}
+# Read data for hippocampus volume and patient details 
+hippocampus_volume <- read.csv(file="oasis_hippocampus.csv", header=TRUE, sep=",")
+patient_details <- read.csv(file="oasis_cross-sectional.csv", header=TRUE, sep=",")
+
+# Join both frames on identifer
+patient_hippocampus_volume <- merge(hippocampus_volume, patient_details, by="ID")
+
+# Select right hippocampal volume for control group
+control_group_rt_hippo_vol <- 
+  subset(patient_hippocampus_volume, CDR==0.0, select=RightHippoVol)
+
+# Select right hippocampal volume for mild dementia group
+mild_dementia_group_rt_hippo_vol <- 
+  subset(patient_hippocampus_volume, CDR!=0.0 & CDR!=2.0 & !is.null(CDR), select=RightHippoVol)
+
+# Select right hippocampal volume for dementia group
+dementia_group_rt_hippo_vol <- 
+  subset(patient_hippocampus_volume, CDR==2.0, select=RightHippoVol)
+
+
+
+```
+
