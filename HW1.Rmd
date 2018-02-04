@@ -132,9 +132,9 @@ $$
 \begin{aligned} 
 \mathcal{I}(\lambda) &= E\left[ \left(\frac{\partial}{\partial\lambda} \ln  p(x|\lambda)  \right )^2 \right]\\
 &= -E\left[ \frac{\partial^2}{\partial\lambda^2} \ln  p(x|\lambda)  \right]\\
-&= -E\left[ \left(\frac{\partial^2}{\partial\lambda^2} \ln  \frac{\lambda^xe^{-\lambda}}{x!}  \right )^2 \right]\\
-&= -E\left[ \left(\frac{\partial^2}{\partial\lambda^2} \left ( x \ln \lambda - \lambda - \ln x! \right)  \right )^2 \right]\\
-&= E\left[ \frac{\partial}{\partial\lambda}\left( \frac{x}{\lambda} - 1   \right )^2 \right]\\
+&= -E\left[ \frac{\partial^2}{\partial\lambda^2} \ln  \frac{\lambda^xe^{-\lambda}}{x!}   \right]\\
+&= -E\left[ \frac{\partial^2}{\partial\lambda^2} \left ( x \ln \lambda - \lambda - \ln x! \right)   \right]\\
+&= E\left[ \frac{\partial}{\partial\lambda}\left( \frac{x}{\lambda} - 1   \right ) \right]\\
 &=-E\left[\frac{-x}{\lambda^2}\right]\\
 &=E\left[\frac{x}{\lambda^2}\right]\\
 &=\frac{1}{\lambda^2}E\left[x\right]\\
@@ -177,5 +177,19 @@ This can be normalized since it is the product of the likelihood, which is a pro
 \end{enumerate}
 
 \end{enumerate}
+
+\item \textbf{Non-conjugate priors:} Let $X_i$ be from a Gaussian with known variance $\sigma^2$ and mean $\mu$
+with uniform prior, i.e.,
+
+$$
+\begin{aligned} 
+\mu &\sim Unif(a,b)\\
+X_i &\sim N(\mu,\sigma^2)
+\end{aligned}
+$$
+What is the posterior pdf, $p(\mu|x_1,\ldots,x_n;\sigma^2,a,b)$?
+
+\textbf{Hint:} There will be an integral that you won’t be able to analytically solve (just leave it in integral form).
+
 
 \end{enumerate}
