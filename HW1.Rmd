@@ -191,5 +191,12 @@ What is the posterior pdf, $p(\mu|x_1,\ldots,x_n;\sigma^2,a,b)$?
 
 \textbf{Hint:} There will be an integral that you won’t be able to analytically solve (just leave it in integral form).
 
-
+$$
+\begin{aligned} 
+p(\mu|x_1,\ldots,x_n;\sigma^2,a,b) &= p(x_1,\ldots,x_n|\mu;\sigma^2)p(\mu;a,b)\\
+&=\int_{-\infty}^{\infty}p(x|\mu;\sigma^2)p(\mu;a,b)dx\\
+&= \int_a^bp(x|\mu;\sigma^2)\frac{1}{b-a}dx\\
+&= \frac{1}{b-a}\frac{1}{\sqrt{2\pi}\sigma}\int_a^b \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right )dx 
+\end{aligned}
+$$
 \end{enumerate}
