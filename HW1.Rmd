@@ -205,6 +205,22 @@ $$
 \section*{R Coding Part}
 
 ```{r}
+
+# Density function for Inverse Gamma: conjugate prior for Gaussian sigma^2
+density_inverse_gamma <- function(x_coordinates, alpha, beta) {
+  
+  return (beta^alpha / gamma(alpha) * x_coordinates^(-alpha - 1) * exp(-beta / x_coordinates))
+  
+}
+
+# Density function for Normal-Inverse-Gamma with parameters mu0, lambda, alpha, beta
+density_normal_inverse_gamma <- 
+  function(distribution_of_mean, distribution_of_variance, mu0 = 0, lambda = 1, alpha = 8, beta = 16)
+{
+  return (dnorm(distribution_of_mean, mean = mu0, sd = sqrt(distribution_of_variance / lambda)) *
+            density_inverse_gamma(distribution_of_variance, alpha, beta))
+}
+
 # Read data for hippocampus volume and patient details 
 hippocampus_volume <- read.csv(file="oasis_hippocampus.csv", header=TRUE, sep=",")
 patient_details <- read.csv(file="oasis_cross-sectional.csv", header=TRUE, sep=",")
@@ -218,13 +234,31 @@ control_group_rt_hippo_vol <-
 
 # Select right hippocampal volume for mild dementia group
 mild_dementia_group_rt_hippo_vol <- 
-  subset(patient_hippocampus_volume, CDR!=0.0 & CDR!=2.0 & !is.null(CDR), select=RightHippoVol)
+  subset(patient_hippocampus_volume, CDR!=0.0 & CDR!=2.0 & !is.null(CDR), 
+         select=RightHippoVol)
 
 # Select right hippocampal volume for dementia group
 dementia_group_rt_hippo_vol <- 
   subset(patient_hippocampus_volume, CDR==2.0, select=RightHippoVol)
+  
+# Model each group as a normal variable with its own mean and variance  
+library(fitdistrplus)
+control_group_rt_hippo_vol_normal_model <- 
+  fitdistr(control_group_rt_hippo_vol[[1]],"normal")
+mild_dementia_group_rt_hippo_vol_normal_model <- 
+  fitdistr(mild_dementia_group_rt_hippo_vol[[1]],"normal")
+dementia_group_rt_hippo_vol_normal_model <- 
+  fitdistr(dementia_group_rt_hippo_vol[[1]],"normal")
+```
 
+TODO: Explain joint posterior density and marginal poserior density.
+
+```{r}
+# Find marginal posterior distribution of variance. Create a range for the variance that
+# is 20% on both sides of the sample variance. Add up the posterior density for mean value
+# that is three standard deviations on both sides.
 
 
 ```
+
 
