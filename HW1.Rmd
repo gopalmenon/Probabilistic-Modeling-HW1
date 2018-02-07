@@ -258,7 +258,31 @@ TODO: Explain joint posterior density and marginal poserior density.
 # is 20% on both sides of the sample variance. Add up the posterior density for mean value
 # that is three standard deviations on both sides.
 
+# Parameters for the N-IG distribution
+MU_NOUGHT = 0
+N_NOUGHT = 10^(-6)
+SHAPE_ALPHA_NOUGHT = 10^(-6)
+SCALE_BETA_NOUGHT = 10^(-6)
 
+# Compute the parameters for the marginal 
+control_grp_shape_alpha_n = SHAPE_ALPHA_NOUGHT + 0.5 * length(control_group_rt_hippo_vol[[1]])
+control_grp_scale_beta_n = SCALE_BETA_NOUGHT + 
+  0.5 * sum((control_group_rt_hippo_vol[[1]] - control_group_rt_hippo_vol_normal_model$estimate[[1]])^2) +
+           0.5 * (N_NOUGHT * length(control_group_rt_hippo_vol[[1]]) /(N_NOUGHT + length(control_group_rt_hippo_vol[[1]]))) * 
+           (MU_NOUGHT - control_group_rt_hippo_vol_normal_model$estimate[[1]])^2
+
+# Sample from the inverse gamma marginal posterior for variance
+NUMBER_OF_SAMPLES = 10^6
+samples_from_variance_marginal_posterior = 
+  rinvgamma(n=NUMBER_OF_SAMPLES, shape=control_grp_shape_alpha_n, scale=control_grp_scale_beta_n)
+
+# Plot a histogram of the samples from the marginal posterior for variance
+hist(samples_from_variance_marginal_posterior, freq=FALSE, main= "Marginal Posterior for Variance", xlab="Variance", ylab="Density", col="blue")
+
+# Plot the density function
+#lines(number_sequence, y_probability_density_trend, lty=1, lwd=3, col="red")
+#legend("topright", legen=c("Random Number Density", "PDF of function Y"), 
+#       col=c("blue", "red"), lwd=3, lty=1)
 ```
 
 
