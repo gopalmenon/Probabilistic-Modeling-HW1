@@ -341,6 +341,25 @@ where subscripts $0$ and $n$ are for the prior and posterior respectively, $n$ i
 
 Given that the random variable $d_{12} = \mu_1-\mu_2$ is the difference of two normally distributed random variables, $d_{12}$ will have a Normal distribution with $\mu_{d_{12}} = \mu_{\mu_1} - \mu_{\mu_2}$ and $\sigma_{12}^2 = \sigma_{\mu_1} + \sigma_{\mu_2}$ \cite{diffN}. Since I could not work out the previous question on the posterior marginal for $\mu_j$, I am not able to proceed further on this part.
 
+\textbf{5}
+
+The joint posterior $p(\mu_j, \sigma^2_j|y_{ij})$ computation for the Jeffrey's prior $p(\mu_j, \sigma_j) \propto \sigma^{-2}$ is given by:
+$$
+\begin{aligned} 
+p(\mu_j, \sigma_j|y_{ij}) &\propto p(y|\mu,\sigma)p(\mu_0,\sigma_0), \text{ where } p(\mu_0,\sigma_0) \propto \sigma^{-2}\\
+&\propto \prod_{i=1}^n\left(\frac{1}{\sqrt{2\pi\sigma^2}}exp\left[-\frac{(y_i-\mu_n)^2}{2\sigma^2} \right] \right) \sigma^{-2}\\
+&= \frac{1}{(2\pi)^{\frac{n}{2}}}(\sigma^2)^{\frac{n}{2} -1}exp\left[\frac{-\sum_{i=1}^n (y_i-\mu)^2}{2\sigma^2}  \right]\\
+p(\sigma_j|y_{ij}) &\propto\frac{1}{(2\pi)^{\frac{n}{2}}}(\sigma^2)^{\frac{n}{2} -1}\int_{-\infty}^{\infty}exp\left[\frac{-\sum_{i=1}^n (y_i-\mu)^2}{2\sigma^2}  \right]d\mu\\
+&= \frac{1}{(2\pi)^{\frac{n}{2}}}(\sigma^2)^{\frac{n}{2} -1}\int_{-\infty}^{\infty}exp\left[\frac{ -n\mu^2}{2\sigma^2}  \right]d\mu, \text{ for the same reason as given in 4a}\\
+&= \frac{1}{(2\pi)^{\frac{n}{2}}}(\sigma^2)^{\frac{n}{2} -1}\frac{\sqrt{\pi}\sqrt{2\sigma^2}}{\sqrt{n}}, \text{ using } \cite{onlineint}\\
+&= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{\sqrt{2\pi}}{\sqrt{n}}(\sigma^2)^{-\frac{n}{2}-1+\frac{1}{2}}\\
+&= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{\sqrt{2\pi}}{\sqrt{n}}(\sigma^2)^{-\frac{n}{2}-\frac{1}{2}}\\
+&= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{\sqrt{2\pi}}{\sqrt{n}}\sigma^{-n-1}\\
+\end{aligned}
+$$
+
+
+
 \begin{thebibliography}{9}
 
 \bibitem{onlineint}
