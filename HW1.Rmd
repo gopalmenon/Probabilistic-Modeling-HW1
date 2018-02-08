@@ -203,7 +203,7 @@ $$
 \end{enumerate}
 
 \section*{R Coding Part}
-
+\textbf{4a}
 ```{r}
 
 # Density function for Inverse Gamma: conjugate prior for Gaussian sigma^2
@@ -257,7 +257,7 @@ dementia_group_rt_hippo_vol_normal_model <-
 The joint posterior $p(\mu_j, \sigma^2_j|y_{ij})$ computation is given by:
 $$
 \begin{aligned} 
-p(\mu_j, \sigma^2_j|y_{ij}) &\propto p(y|\mu_0,\sigma_0)p(\mu,\sigma), \text{ where } p(\mu,\sigma) \sim N-IG(\mu_0,n_0,\alpha,\beta) \\
+p(\mu_j, \sigma^2_j|y_{ij}) &\propto p(y|\mu,\sigma^2)p(\mu,\sigma^2), \text{ where } p(\mu,\sigma^2) \sim N-IG(\mu_0,n_0,\alpha,\beta) \\
 &= \prod_{i=1}^n\left(\frac{1}{\sqrt{2\pi\sigma^2}}exp\left[-\frac{(y_i-\mu_n)^2}{2\sigma^2} \right] \right)\frac{\sqrt{n_0}}{\sigma\sqrt{2\pi}}\frac{\beta^{\alpha}}{\Gamma(\alpha)}\left(\frac{1}{\sigma^2}\right)^{\alpha+1}exp\left[ -\frac{2\beta + n_0(\mu-\mu_0)^2}{2\sigma^2} \right]\\
 &= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{n_0^\frac{1}{2}}{(2\pi)^\frac{1}{2}}\frac{\beta^{\alpha}}{\Gamma(\alpha)}(\sigma^2)^{-\frac{n}{2}-\frac{1}{2}-\alpha-1} exp\left[  \frac{\sum_{i=1}^n(y_i-\mu)^2 -n_0(\mu-\mu_0)^2-2\beta}{2\sigma^2} \right]\\
 p(\sigma^2_j|y_{ij}) &= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{n_0^\frac{1}{2}}{(2\pi)^\frac{1}{2}}\frac{\beta^{\alpha}}{\Gamma(\alpha)}(\sigma^2)^{-\frac{n}{2}-\frac{1}{2}-\alpha-1} \int_{-\infty}^{\infty} exp\left[  \frac{\sum_{i=1}^n(y_i-\mu)^2 -n_0(\mu-\mu_0)^2-2\beta}{2\sigma^2} \right] d\mu\\
@@ -271,7 +271,7 @@ p(\sigma^2_j|y_{ij}) &= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{n_0^\frac{1}{2}}{(2\
 &= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{n_0^\frac{1}{2}}{(2\pi)^\frac{1}{2}}\frac{\beta^{\alpha}}{\Gamma(\alpha)}(\sigma^2)^{-\frac{n}{2}-\alpha-1}\frac{\sqrt{2\pi}}{\sqrt{n_0+n}}exp\left[ \frac{-\beta}{\sigma^2} \right]\\
 \end{aligned}
 $$
-The above expression for the marginal posterior is of the Inverse Gamma distribution form with parameters
+The above expression for the marginal posterior is of the Inverse Gamma distribution form with parameters. The definite integral was done online \cite{onlineint}.
 $$
 \begin{aligned} 
 -\alpha_n -1 &= -\frac{n}{2}-\alpha-1\\
@@ -319,5 +319,37 @@ control_grp_posterior_density =
   dinvgamma(control_grp_posterior_sigma, 
             shape=control_grp_shape_alpha_n, scale=control_grp_scale_beta_n)
 ```
-I tried plotting the density function over the histogram (see code after histogram), but got all zero values. Also I did not plot the sample variance over the histogram as the value was very different from that shown on the histogram. The control group variance was 15,059,103 as opposed to the variance values on the histogram which are different in orders of magnitude.
+I tried plotting the density function over the histogram (see code after histogram), but got all zero values. Also I did not plot the sample variance over the histogram as the value was very different from that shown on the histogram. The control group variance was 15,059,103 as opposed to the variance values on the histogram which are different in orders of magnitude.\\
+
+\textbf{4b}
+
+The marginal posterior $p(\mu_j|y_{ij})$ is given by:
+$$
+\begin{aligned} 
+p(\mu_j|y_{ij}) &\propto \int_{-\infty}^{\infty}p(y|\mu,\sigma^2)p(\mu,\sigma^2)d\sigma^2, \text{ where } p(\mu,\sigma^2) \sim N-IG(\mu_0,n_0,\alpha,\beta) \\
+\end{aligned}
+$$
+If we integrate out the variance from the Normal Inverse-Gamma prior, we should be left with the likelihood times the normal distribution of the prior for $\mu$. This will be a Normal distribution since the likelihood is the product of Normally distributed variables and so is the prior for $\mu$. I tried doing this analytically, but did not get very far as the integral did not reduce to a recognizable form. 
+
+As given in chapter 2 of Bayesian Data Analysis\cite{BDA3}, the parameters for marginal posterior will be:
+$$
+\mu_n = \frac{\frac{1}{\tau_0^2}\mu_0 +  \frac{n}{\sigma^2}\bar{y}}{\frac{1}{\tau_0^2} + \frac{n}{\sigma^2}}, \text{ and } \frac{1}{\tau_n^2}= \frac{1}{\tau_0^2}+ \frac{n}{\sigma^2}
+$$
+where subscripts $0$ and $n$ are for the prior and posterior respectively, $n$ is the number of samples, $\bar{y}$ is the sample mean, and $\tau$ is the precision. However this did not help as $\tau_0$ and $\mu_0$ are unknown.
+
+\textbf{4c}
+
+Given that the random variable $d_{12} = \mu_1-\mu_2$ is the difference of two normally distributed random variables, $d_{12}$ will have a Normal distribution with $\mu_{d_{12}} = \mu_{\mu_1} - \mu_{\mu_2}$ and $\sigma_{12}^2 = \sigma_{\mu_1} + \sigma_{\mu_2}$ \cite{diffN}. Since I could not work out the previous question on the posterior marginal for $\mu_j$, I am not able to proceed further on this part.
+
+\begin{thebibliography}{9}
+
+\bibitem{onlineint}
+\say{Integral Calculator.}\textit{ Integral Calculator With Steps!}, www.integral-calculator.com/.
+ 
+\bibitem{BDA3} 
+\say{2.5 Normal Distribution with Known Variance.} \textit{Bayesian Data Analysis}, by Andrew Gelman, CRC Press/Taylor \& Francis, 2013.
+  
+\bibitem{diffN} 
+\say{Normal Difference Distribution.} \textit{Normal Difference Distribution -- from Wolfram Mathworld}, mathworld.wolfram.com/NormalDifferenceDistribution.html.
+\end{thebibliography}
 
