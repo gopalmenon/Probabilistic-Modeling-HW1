@@ -86,7 +86,7 @@ E\left[ T(x)\right] &= \nabla A(\eta)\\
 &= \begin{bmatrix}\frac{\sigma^2}{2}.2\frac{\mu}{\sigma^2} \\ \frac{-1}{2\eta_2} -\mu^2  \end{bmatrix}\\
 &= \begin{bmatrix}\mu \\ \sigma^2 - \mu^2  \end{bmatrix}\\
 \Rightarrow E\left[x\right] &= \mu, \text{ and}\\
- E\left[x^2 \right] &= \sigma^2 - \mu^2, \text{ which is true since } \sigma^2 = E\left[x^2 \right] - \mu^2
+ E\left[x^2 \right] &= \sigma^2 - \mu^2, \text{ which is not the case since } \sigma^2 = E\left[x^2 \right] - \mu^2
 \end{aligned}
 $$
 
@@ -241,8 +241,11 @@ mild_dementia_group_rt_hippo_vol <-
 dementia_group_rt_hippo_vol <- 
   subset(patient_hippocampus_volume, CDR==2.0, select=RightHippoVol)
   
-# Model each group as a normal variable with its own mean and variance  
 library(fitdistrplus)
+library(MASS)
+library(survival)
+
+# Model each group as a normal variable with its own mean and variance  
 control_group_rt_hippo_vol_normal_model <- 
   fitdistr(control_group_rt_hippo_vol[[1]],"normal")
 mild_dementia_group_rt_hippo_vol_normal_model <- 
@@ -251,8 +254,36 @@ dementia_group_rt_hippo_vol_normal_model <-
   fitdistr(dementia_group_rt_hippo_vol[[1]],"normal")
 ```
 
-TODO: Explain joint posterior density and marginal poserior density.
-
+The joint posterior $p(\mu_j, \sigma^2_j|y_{ij})$ computation is given by:
+$$
+\begin{aligned} 
+p(\mu_j, \sigma^2_j|y_{ij}) &\propto p(y|\mu_0,\sigma_0)p(\mu,\sigma), \text{ where } p(\mu,\sigma) \sim N-IG(\mu_0,n_0,\alpha,\beta) \\
+&= \prod_{i=1}^n\left(\frac{1}{\sqrt{2\pi\sigma^2}}exp\left[-\frac{(y_i-\mu_n)^2}{2\sigma^2} \right] \right)\frac{\sqrt{n_0}}{\sigma\sqrt{2\pi}}\frac{\beta^{\alpha}}{\Gamma(\alpha)}\left(\frac{1}{\sigma^2}\right)^{\alpha+1}exp\left[ -\frac{2\beta + n_0(\mu-\mu_0)^2}{2\sigma^2} \right]\\
+&= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{n_0^\frac{1}{2}}{(2\pi)^\frac{1}{2}}\frac{\beta^{\alpha}}{\Gamma(\alpha)}(\sigma^2)^{-\frac{n}{2}-\frac{1}{2}-\alpha-1} exp\left[  \frac{\sum_{i=1}^n(y_i-\mu)^2 -n_0(\mu-\mu_0)^2-2\beta}{2\sigma^2} \right]\\
+p(\sigma^2_j|y_{ij}) &= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{n_0^\frac{1}{2}}{(2\pi)^\frac{1}{2}}\frac{\beta^{\alpha}}{\Gamma(\alpha)}(\sigma^2)^{-\frac{n}{2}-\frac{1}{2}-\alpha-1} \int_{-\infty}^{\infty} exp\left[  \frac{\sum_{i=1}^n(y_i-\mu)^2 -n_0(\mu-\mu_0)^2-2\beta}{2\sigma^2} \right] d\mu\\
+\end{aligned}
+$$
+Since the integral of a normal distribution with a non-zero mean will be the same as the integral of a normal distribution with a zero mean (the area under the curve stays the same), this can be written as:
+$$
+\begin{aligned} 
+p(\sigma^2_j|y_{ij}) &= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{n_0^\frac{1}{2}}{(2\pi)^\frac{1}{2}}\frac{\beta^{\alpha}}{\Gamma(\alpha)}(\sigma^2)^{-\frac{n}{2}-\frac{1}{2}-\alpha-1} \int_{-\infty}^{\infty} exp\left[  \frac{-(n_0+n)\mu^2 -2\beta}{2\sigma^2} \right] d\mu\\
+&= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{n_0^\frac{1}{2}}{(2\pi)^\frac{1}{2}}\frac{\beta^{\alpha}}{\Gamma(\alpha)}(\sigma^2)^{-\frac{n}{2}-\alpha-\frac{3}{2}}\frac{\sqrt{2\pi}\sigma}{\sqrt{n_0+n}}exp\left[ \frac{-2\beta}{2\sigma^2} \right]\\
+&= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{n_0^\frac{1}{2}}{(2\pi)^\frac{1}{2}}\frac{\beta^{\alpha}}{\Gamma(\alpha)}(\sigma^2)^{-\frac{n}{2}-\alpha-1}\frac{\sqrt{2\pi}}{\sqrt{n_0+n}}exp\left[ \frac{-\beta}{\sigma^2} \right]\\
+\end{aligned}
+$$
+The above expression for the marginal posterior is of the Inverse Gamma distribution form with parameters
+$$
+\begin{aligned} 
+-\alpha_n -1 &= -\frac{n}{2}-\alpha-1\\
+\alpha_n &= \alpha + \frac{n}{2}
+\end{aligned} 
+$$
+and $\beta_n$ remaining unchanged from that of the N-IG distribution. The value of $\beta_n$, as per the class notes is:
+$$
+\begin{aligned} 
+\beta_n &= \beta + \frac{1}{2} \sum_{i=1}^n(x_i-\bar{x})^2 =\frac{1}{2}\frac{n_0n}{n_0+n}(\mu_0-\bar{x})^2
+\end{aligned} 
+$$
 ```{r}
 # Find marginal posterior distribution of variance. Create a range for the variance that
 # is 20% on both sides of the sample variance. Add up the posterior density for mean value
@@ -267,18 +298,25 @@ SCALE_BETA_NOUGHT = 10^(-6)
 # Compute the parameters for the marginal 
 control_grp_shape_alpha_n = SHAPE_ALPHA_NOUGHT + 0.5 * length(control_group_rt_hippo_vol[[1]])
 control_grp_scale_beta_n = SCALE_BETA_NOUGHT + 
-  0.5 * sum((control_group_rt_hippo_vol[[1]] - control_group_rt_hippo_vol_normal_model$estimate[[1]])^2) +
-           0.5 * (N_NOUGHT * length(control_group_rt_hippo_vol[[1]]) /(N_NOUGHT + length(control_group_rt_hippo_vol[[1]]))) * 
+  0.5 * sum((control_group_rt_hippo_vol[[1]] - 
+               control_group_rt_hippo_vol_normal_model$estimate[[1]])^2) +
+           0.5 * (N_NOUGHT * length(control_group_rt_hippo_vol[[1]]) /
+                    (N_NOUGHT + length(control_group_rt_hippo_vol[[1]]))) * 
            (MU_NOUGHT - control_group_rt_hippo_vol_normal_model$estimate[[1]])^2
 
 # Sample from the inverse gamma marginal posterior for variance
 NUMBER_OF_SAMPLES = 10^6
 samples_from_variance_marginal_posterior = 
-  rinvgamma(n=NUMBER_OF_SAMPLES, shape=control_grp_shape_alpha_n, scale=control_grp_scale_beta_n)
+  1/rgamma(n=NUMBER_OF_SAMPLES, shape=control_grp_shape_alpha_n, scale=control_grp_scale_beta_n)
 
 # Plot a histogram of the samples from the marginal posterior for variance
-hist(samples_from_variance_marginal_posterior, freq=FALSE, main= "Marginal Posterior for Variance", xlab="Variance", ylab="Density", col="blue")
+hist(samples_from_variance_marginal_posterior, freq=FALSE, 
+     main= "Control Group Marginal Posterior for Variance", xlab="Variance", ylab="Density", col="blue")
 
+
+variance_marg_post_curve <- function(alpha, beta) sin(cos(x)*exp(-x/2))
+curve(chippy, -8, 7, n = 2001)
+plot (chippy, -8, -5)
 # Plot the density function
 #lines(number_sequence, y_probability_density_trend, lty=1, lwd=3, col="red")
 #legend("topright", legen=c("Random Number Density", "PDF of function Y"), 
