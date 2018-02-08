@@ -312,15 +312,12 @@ samples_from_variance_marginal_posterior =
 # Plot a histogram of the samples from the marginal posterior for variance
 hist(samples_from_variance_marginal_posterior, freq=FALSE, 
      main= "Control Group Marginal Posterior for Variance", xlab="Variance", ylab="Density", col="blue")
-
-
-variance_marg_post_curve <- function(alpha, beta) sin(cos(x)*exp(-x/2))
-curve(chippy, -8, 7, n = 2001)
-plot (chippy, -8, -5)
-# Plot the density function
-#lines(number_sequence, y_probability_density_trend, lty=1, lwd=3, col="red")
-#legend("topright", legen=c("Random Number Density", "PDF of function Y"), 
-#       col=c("blue", "red"), lwd=3, lty=1)
+library(MCMCpack)
+control_grp_posterior_sigma = 
+  1/rgamma(n=1000, shape=control_grp_shape_alpha_n, scale=control_grp_scale_beta_n)
+control_grp_posterior_density = 
+  dinvgamma(control_grp_posterior_sigma, 
+            shape=control_grp_shape_alpha_n, scale=control_grp_scale_beta_n)
 ```
-
+I tried plotting the density function over the histogram (see code after histogram), but got all zero values. Also I did not plot the sample variance over the histogram as the value was very different from that shown on the histogram. The control group variance was 15,059,103 as opposed to the variance values on the histogram which are different in orders of magnitude.
 
