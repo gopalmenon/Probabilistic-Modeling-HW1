@@ -284,42 +284,53 @@ $$
 \beta_n &= \beta + \frac{1}{2} \sum_{i=1}^n(x_i-\bar{x})^2 =\frac{1}{2}\frac{n_0n}{n_0+n}(\mu_0-\bar{x})^2
 \end{aligned} 
 $$
+The following is based on Wikipedia formulas \cite{conjdist}.
 ```{r}
-# Find marginal posterior distribution of variance. Create a range for the variance that
-# is 20% on both sides of the sample variance. Add up the posterior density for mean value
-# that is three standard deviations on both sides.
 
 # Parameters for the N-IG distribution
-MU_NOUGHT = 0
-N_NOUGHT = 10^(-6)
-SHAPE_ALPHA_NOUGHT = 10^(-6)
-SCALE_BETA_NOUGHT = 10^(-6)
+PRIOR_PSEUDO_SAMPLE_MEAN_MU = 0
+PRIOR_PSEUDO_OBSERVATION_COUNT_NU = 10^(-6)
+PRIOR_PSEUDO_VARIANCE_OBS_CNT_ALPHA = 10^(-6)
+PRIOR_PSEUDO_SUM_SQUARE_DEV_BETA = 10^(-6)
 
-# Compute the parameters for the marginal 
-control_grp_shape_alpha_n = SHAPE_ALPHA_NOUGHT + 0.5 * length(control_group_rt_hippo_vol[[1]])
-control_grp_scale_beta_n = SCALE_BETA_NOUGHT + 
-  0.5 * sum((control_group_rt_hippo_vol[[1]] - 
-               control_group_rt_hippo_vol_normal_model$estimate[[1]])^2) +
-           0.5 * (N_NOUGHT * length(control_group_rt_hippo_vol[[1]]) /
-                    (N_NOUGHT + length(control_group_rt_hippo_vol[[1]]))) * 
-           (MU_NOUGHT - control_group_rt_hippo_vol_normal_model$estimate[[1]])^2
+# Statistics from observations
+control_grp_observations_count = length(control_group_rt_hippo_vol[[1]])
+control_grp_sample_mean = control_group_rt_hippo_vol_normal_model$estimate[[1]]
+control_grp_variance = control_group_rt_hippo_vol_normal_model$sd[[1]]^2
+
+# Compute the parameters for the N-IG posterior distribution
+control_grp_posterior_mu = (PRIOR_PSEUDO_OBSERVATION_COUNT_NU * PRIOR_PSEUDO_SAMPLE_MEAN_MU +
+                                   control_grp_observations_count * control_grp_sample_mean) /
+  (PRIOR_PSEUDO_OBSERVATION_COUNT_NU + control_grp_observations_count)
+
+control_grp_posterior_nu = PRIOR_PSEUDO_OBSERVATION_COUNT_NU + control_grp_observations_count
+
+control_grp_posterior_alpha = PRIOR_PSEUDO_VARIANCE_OBS_CNT_ALPHA + 0.5 * control_grp_observations_count
+
+control_grp_posterior_beta = PRIOR_PSEUDO_SUM_SQUARE_DEV_BETA + 
+  0.5 * sum((control_group_rt_hippo_vol[[1]] - control_grp_sample_mean)^2) +
+  (control_grp_observations_count * PRIOR_PSEUDO_OBSERVATION_COUNT_NU /
+  (PRIOR_PSEUDO_OBSERVATION_COUNT_NU + control_grp_observations_count)) * 
+  0.5 * (control_grp_sample_mean - PRIOR_PSEUDO_SAMPLE_MEAN_MU)^2
 
 # Sample from the inverse gamma marginal posterior for variance
 NUMBER_OF_SAMPLES = 10^6
-samples_from_variance_marginal_posterior = 
-  1/rgamma(n=NUMBER_OF_SAMPLES, shape=control_grp_shape_alpha_n, scale=control_grp_scale_beta_n)
+samples_from_ctrl_grp_variance_marginal_posterior = 
+  1/rgamma(n=NUMBER_OF_SAMPLES, shape=control_grp_posterior_alpha, scale=control_grp_posterior_beta)
 
 # Plot a histogram of the samples from the marginal posterior for variance
-hist(samples_from_variance_marginal_posterior, freq=FALSE, 
+hist(samples_from_ctrl_grp_variance_marginal_posterior, freq=FALSE, 
      main= "Control Group Marginal Posterior for Variance", xlab="Variance", ylab="Density", col="blue")
 library(MCMCpack)
 control_grp_posterior_sigma = 
-  1/rgamma(n=1000, shape=control_grp_shape_alpha_n, scale=control_grp_scale_beta_n)
+  1/rgamma(n=1000, shape=control_grp_posterior_alpha, scale=control_grp_posterior_beta)
 control_grp_posterior_density = 
   dinvgamma(control_grp_posterior_sigma, 
-            shape=control_grp_shape_alpha_n, scale=control_grp_scale_beta_n)
+            shape=control_grp_posterior_alpha, scale=control_grp_posterior_beta)
 ```
-I tried plotting the density function over the histogram (see code after histogram), but got all zero values. Also I did not plot the sample variance over the histogram as the value was very different from that shown on the histogram. The control group variance was 15,059,103 as opposed to the variance values on the histogram which are different in orders of magnitude.\\
+I tried plotting the density function over the histogram (see code after histogram), but got all zero values. Also I did not plot the sample variance over the histogram as the value was very different from that shown on the histogram. The control group variance and the variance values on the histogram are different in orders of magnitude.
+
+I skipped the plotting of the remaining two groups as the values for the control group were wrong.
 
 \textbf{4b}
 
@@ -337,6 +348,8 @@ $$
 $$
 where subscripts $0$ and $n$ are for the prior and posterior respectively, $n$ is the number of samples, $\bar{y}$ is the sample mean, and $\tau$ is the precision. However this did not help as $\tau_0$ and $\mu_0$ are unknown.
 
+
+
 \textbf{4c}
 
 Given that the random variable $d_{12} = \mu_1-\mu_2$ is the difference of two normally distributed random variables, $d_{12}$ will have a Normal distribution with $\mu_{d_{12}} = \mu_{\mu_1} - \mu_{\mu_2}$ and $\sigma_{12}^2 = \sigma_{\mu_1} + \sigma_{\mu_2}$ \cite{diffN}. Since I could not work out the previous question on the posterior marginal for $\mu_j$, I am not able to proceed further on this part.
@@ -349,16 +362,60 @@ $$
 p(\mu_j, \sigma_j|y_{ij}) &\propto p(y|\mu,\sigma)p(\mu_0,\sigma_0), \text{ where } p(\mu_0,\sigma_0) \propto \sigma^{-2}\\
 &\propto \prod_{i=1}^n\left(\frac{1}{\sqrt{2\pi\sigma^2}}exp\left[-\frac{(y_i-\mu_n)^2}{2\sigma^2} \right] \right) \sigma^{-2}\\
 &= \frac{1}{(2\pi)^{\frac{n}{2}}}(\sigma^2)^{\frac{n}{2} -1}exp\left[\frac{-\sum_{i=1}^n (y_i-\mu)^2}{2\sigma^2}  \right]\\
-p(\sigma_j|y_{ij}) &\propto\frac{1}{(2\pi)^{\frac{n}{2}}}(\sigma^2)^{\frac{n}{2} -1}\int_{-\infty}^{\infty}exp\left[\frac{-\sum_{i=1}^n (y_i-\mu)^2}{2\sigma^2}  \right]d\mu\\
-&= \frac{1}{(2\pi)^{\frac{n}{2}}}(\sigma^2)^{\frac{n}{2} -1}\int_{-\infty}^{\infty}exp\left[\frac{ -n\mu^2}{2\sigma^2}  \right]d\mu, \text{ for the same reason as given in 4a}\\
-&= \frac{1}{(2\pi)^{\frac{n}{2}}}(\sigma^2)^{\frac{n}{2} -1}\frac{\sqrt{\pi}\sqrt{2\sigma^2}}{\sqrt{n}}, \text{ using } \cite{onlineint}\\
+p(\sigma_j|y_{ij}) &\propto\frac{1}{(2\pi)^{\frac{n}{2}}}(\sigma^2)^{-\frac{n}{2} -1}\int_{-\infty}^{\infty}exp\left[\frac{-\sum_{i=1}^n (y_i-\mu)^2}{2\sigma^2}  \right]d\mu\\
+&= \frac{1}{(2\pi)^{\frac{n}{2}}}(\sigma^2)^{-\frac{n}{2} -1}\int_{-\infty}^{\infty}exp\left[\frac{ -n\mu^2}{2\sigma^2}  \right]d\mu, \text{ for the same reason as given in 4a}\\
+&= \frac{1}{(2\pi)^{\frac{n}{2}}}(\sigma^2)^{-\frac{n}{2} -1}\frac{\sqrt{\pi}\sqrt{2\sigma^2}}{\sqrt{n}}, \text{ using } \cite{onlineint}\\
 &= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{\sqrt{2\pi}}{\sqrt{n}}(\sigma^2)^{-\frac{n}{2}-1+\frac{1}{2}}\\
 &= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{\sqrt{2\pi}}{\sqrt{n}}(\sigma^2)^{-\frac{n}{2}-\frac{1}{2}}\\
 &= \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{\sqrt{2\pi}}{\sqrt{n}}\sigma^{-n-1}\\
 \end{aligned}
 $$
 
+As per this paper \cite{nipriors} on non-informative priors, the posteriors are given by:
 
+$$
+\begin{aligned} 
+p(\mu|D) &\sim T\left(n-1, \bar{x}, \frac{S^2}{n(n-1)}\right), \text{ and}\\
+p(\sigma^2|D) &\sim IG\left(\frac{(n-1)}{2}, \frac{2}{S^2}\right), \text{ where}\\
+\bar{x} &= \frac{1}{n}\sum_{i=1}^nx_i, \text{ and}\\
+S^2 &= \sum_{i=1}^n(x_i-\bar{x})^2
+\end{aligned}
+$$
+```{r}
+# Marginal posterior for variance using Jeffrey's prior
+ctrl_grp_sum_of_squared_deviations = sum((control_group_rt_hippo_vol[[1]] - control_grp_sample_mean)^2)
+ctrl_grp_variance_jeffr_posterior_samples = 1/rgamma(n=NUMBER_OF_SAMPLES,
+                                                     shape=(control_grp_observations_count-1)/2,
+                                                     scale=2/ctrl_grp_sum_of_squared_deviations)
+
+
+```
+I got an error while plotting the histogram for the variance posterior using the Jeffrey's prior. So I skipped the rest of the analysis.
+
+\textbf{6}
+```{r}
+# Prior parameter values for N-IG distribution
+ELDERLY_PRIOR_SAMPLE_MEAN = 2133
+ELDERLY_PRIOR_SAMPLE_COUNT = 127
+ELDERLY_PRIOR_ALPHA = ELDERLY_PRIOR_SAMPLE_COUNT/2
+ELDERLY_PRIOR_STD_DEV = 279
+ELDERLY_PRIOR_BETA = ELDERLY_PRIOR_SAMPLE_COUNT * ELDERLY_PRIOR_STD_DEV^2 
+
+# Sample from the inverse gamma marginal posterior for variance
+samples_from_elderly_grp_variance_marginal_posterior = 
+  1/rgamma(n=NUMBER_OF_SAMPLES, shape=ELDERLY_PRIOR_ALPHA, scale=ELDERLY_PRIOR_BETA)
+
+# Plot a histogram of the samples from the marginal posterior for variance
+hist(samples_from_elderly_grp_variance_marginal_posterior, freq=FALSE, 
+     main= "Elderly Group Marginal Posterior for Variance", xlab="Variance", ylab="Density", col="blue")
+```
+
+The variance values seem to be incorrect as they are very small.
+
+\textbf{My Results for the R Coding Part}
+I started the coding part with mathematical analysis as I did not know the formulas. That exercise took a long time and was not successful. After the end of the class on Thursday February 8, I got some pointers from fellow students on the Wikipedia page on conjugate priors that had details on how to arrive at posterior model parameters. I also got information on another page relating to the Jeffrey's prior. I attempted to use the information to arrive at model parameters, but I was not getting accurate results - the variance values were too small to be accurate. I was not left with much time to get this to work. 
+
+Although the assignment is structured so as to provide a better understanding of evaluating model parameters, since I did not get any results, I do not have a good understanding of the process of doing the prediction.
 
 \begin{thebibliography}{9}
 
@@ -370,5 +427,12 @@ $$
   
 \bibitem{diffN} 
 \say{Normal Difference Distribution.} \textit{Normal Difference Distribution -- from Wolfram Mathworld}, mathworld.wolfram.com/NormalDifferenceDistribution.html.
+
+\bibitem{nipriors}
+\say{A Catalog of Noninformative Priors.}, http://www.stats.org.uk/priors/noninformative/YangBerger1998.pdf.
+
+\bibitem{conjdist}
+\say{Conjugate Prior.} \textit{Wikipedia}, Wikimedia Foundation, 15 Jan. 2018.
+
 \end{thebibliography}
 
